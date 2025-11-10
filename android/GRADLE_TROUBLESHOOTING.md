@@ -4,13 +4,28 @@ If you encounter Gradle sync errors, try these solutions:
 
 ## Common Issues and Solutions
 
-### 1. "module() method not found" Error
+### 1. Java/Gradle Version Compatibility
+
+**Problem**: "Your build is currently configured to use incompatible Java X and Gradle Y"
+
+**Solution**: The project is configured for:
+- **Gradle 8.5** (compatible with Java 8-21)
+- **Android Gradle Plugin 8.2.2**
+- **Kotlin 1.9.22**
+
+**Recommended Java versions:**
+- Java 17 (LTS) - Most stable
+- Java 21 (LTS) - Latest, requires Gradle 8.5+
+
+**If using Java 21**, make sure Gradle is 8.5 or higher (already configured).
+
+### 2. "module() method not found" Error
 
 **Solution**: The project has been updated to use modern Gradle syntax. Make sure you:
 - Use Android Studio Hedgehog (2023.1.1) or newer
-- Gradle 8.0 or newer (specified in gradle-wrapper.properties)
+- Gradle 8.5 (specified in gradle-wrapper.properties)
 
-### 2. Socket.IO Dependency Conflict
+### 3. Socket.IO Dependency Conflict
 
 **Solution**: The Socket.IO dependency now excludes the conflicting `org.json` module:
 ```gradle
@@ -19,11 +34,11 @@ implementation('io.socket:socket.io-client:2.1.0') {
 }
 ```
 
-### 3. Repository Issues
+### 4. Repository Issues
 
 **Solution**: Changed `repositoriesMode` from `FAIL_ON_PROJECT_REPOS` to `PREFER_SETTINGS` in settings.gradle
 
-### 4. General Gradle Sync Failures
+### 5. General Gradle Sync Failures
 
 Try these steps in order:
 
@@ -54,13 +69,15 @@ Then reopen Android Studio and let it re-download dependencies.
 #### Step 4: Update Gradle Wrapper
 ```bash
 cd android
-./gradlew wrapper --gradle-version=8.0
+./gradlew wrapper --gradle-version=8.5
 ```
 
-#### Step 5: Check Android Studio Version
+#### Step 5: Check Versions
 Make sure you're using:
-- Android Studio Hedgehog (2023.1.1) or newer
-- JDK 17 or newer
+- **Android Studio**: Hedgehog (2023.1.1) or newer
+- **JDK**: 17 (recommended) or 21
+- **Gradle**: 8.5 (auto-downloaded from wrapper)
+- **Android Gradle Plugin**: 8.2.2
 
 Update if needed from: https://developer.android.com/studio
 
@@ -101,11 +118,13 @@ Or use offline mode:
 ### 7. Minimum Requirements
 
 Ensure you have:
-- Android Studio Hedgehog (2023.1.1) or newer
-- JDK 17 or newer
-- Gradle 8.0 or newer
-- Android SDK 34 (compileSdk)
-- Minimum SDK 24 (minSdk)
+- **Android Studio**: Hedgehog (2023.1.1) or newer
+- **JDK**: 17 (recommended) or 21
+- **Gradle**: 8.5 (auto-configured)
+- **Android Gradle Plugin**: 8.2.2 (auto-configured)
+- **Kotlin**: 1.9.22 (auto-configured)
+- **Android SDK**: API 34 (compileSdk)
+- **Minimum Android**: API 24 (Android 7.0)
 
 ### 8. Create local.properties
 
@@ -149,29 +168,26 @@ If all else fails, you can temporarily remove Socket.IO and use polling instead:
 2. Comment out WebSocket code in `MainActivity.kt`
 3. Use manual refresh instead of real-time updates
 
-### Alternative: Use Older Gradle
+### Version Compatibility Matrix
 
-If you must use an older Android Studio version:
+| Java Version | Gradle Version | AGP Version | Status |
+|--------------|----------------|-------------|---------|
+| Java 17 (LTS) | 8.5 | 8.2.2 | ✅ Recommended |
+| Java 21 (LTS) | 8.5+ | 8.2.2+ | ✅ Supported |
+| Java 11 | 7.5+ | 7.4.2 | ⚠️ Older |
 
-**In android/build.gradle:**
-```gradle
-plugins {
-    id 'com.android.application' version '7.4.2' apply false
-    id 'com.android.library' version '7.4.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
-}
-```
-
-**In gradle-wrapper.properties:**
-```properties
-distributionUrl=https\://services.gradle.org/distributions/gradle-7.5-bin.zip
-```
+**Current Project Configuration:**
+- Gradle: 8.5
+- Android Gradle Plugin: 8.2.2
+- Kotlin: 1.9.22
+- Works with: Java 17 or Java 21
 
 ## Success Checklist
 
-- [ ] Android Studio Hedgehog or newer installed
-- [ ] JDK 17 or newer configured
-- [ ] Gradle wrapper updated to 8.0+
+- [ ] Android Studio Hedgehog (2023.1.1) or newer installed
+- [ ] JDK 17 or 21 configured
+- [ ] Gradle 8.5 (auto-configured via wrapper)
+- [ ] Android Gradle Plugin 8.2.2 (auto-configured)
 - [ ] Caches invalidated
 - [ ] Project cleaned and rebuilt
 - [ ] local.properties created with correct SDK path
@@ -197,8 +213,26 @@ rm -rf .gradle
 rm -rf app/build
 rm -rf build
 ./gradlew clean
-./gradlew wrapper --gradle-version=8.0
+./gradlew wrapper --gradle-version=8.5
 ```
 
 Then reopen in Android Studio and sync.
+
+## Java Version Check
+
+To check your Java version:
+
+```bash
+java -version
+```
+
+**If you see Java 21**, make sure you're using Gradle 8.5+ (already configured).
+
+**If you see Java 8-11**, consider upgrading to Java 17 (LTS) for better compatibility.
+
+**To change Java version in Android Studio:**
+1. File → Settings (or Preferences on Mac)
+2. Build, Execution, Deployment → Build Tools → Gradle
+3. Gradle JDK → Select Java 17 or 21
+4. Click OK and re-sync
 
