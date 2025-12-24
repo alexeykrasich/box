@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from automation_manager import AutomationManager
+from script_manager import ScriptManager
+from docker_manager import DockerManager
 import logging
 
 # Configure logging
@@ -16,8 +18,10 @@ CORS(app)
 # Initialize SocketIO
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Initialize Automation Manager
+# Initialize Managers
 manager = AutomationManager()
+script_manager = ScriptManager()
+docker_manager = DockerManager()
 
 
 def broadcast_status_update(status):
@@ -114,6 +118,137 @@ def delete_automation(automation_id):
         return jsonify({"success": True})
     except Exception as e:
         logger.error(f"Error deleting automation: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============== SCRIPTS API ==============
+
+@app.route('/api/scripts', methods=['GET'])
+def list_scripts():
+    """List all available scripts in scripts/ directory"""
+    try:
+        scripts = script_manager.list_scripts()
+        return jsonify({"success": True, "data": scripts})
+    except Exception as e:
+        logger.error(f"Error listing scripts: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/scripts/<filename>/run', methods=['POST'])
+def run_script(filename):
+    """Run a script by filename"""
+    try:
+        result = script_manager.run_script(filename)
+        return jsonify({"success": True, "data": result})
+    except FileNotFoundError as e:
+        return jsonify({"success": False, "error": str(e)}), 404
+    except Exception as e:
+        logger.error(f"Error running script: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/scripts/running', methods=['GET'])
+def get_running_scripts():
+    """Get all currently running scripts"""
+    try:
+        scripts = script_manager.get_running_scripts()
+        return jsonify({"success": True, "data": scripts})
+    except Exception as e:
+        logger.error(f"Error getting running scripts: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/scripts/status/<run_id>', methods=['GET'])
+def get_script_status(run_id):
+    """Get status of a script execution"""
+    try:
+        status = script_manager.get_script_status(run_id)
+        return jsonify({"success": True, "data": status})
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 404
+    except Exception as e:
+        logger.error(f"Error getting script status: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/scripts/stop/<run_id>', methods=['POST'])
+def stop_script(run_id):
+    """Stop a running script"""
+    try:
+        result = script_manager.stop_script(run_id)
+        return jsonify({"success": True, "data": result})
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)}), 404
+    except Exception as e:
+        logger.error(f"Error stopping script: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ============== DOCKER API ==============
+
+@app.route('/api/docker/status', methods=['GET'])
+def docker_status():
+    """Check if Docker is available"""
+    try:
+        available = docker_manager.is_docker_available()
+        return jsonify({"success": True, "data": {"available": available}})
+    except Exception as e:
+        return jsonify({"success": True, "data": {"available": False, "error": str(e)}})
+
+
+@app.route('/api/docker/containers', methods=['GET'])
+def list_containers():
+    """List all Docker containers"""
+    try:
+        all_containers = request.args.get('all', 'true').lower() == 'true'
+        containers = docker_manager.list_containers(all_containers)
+        return jsonify({"success": True, "data": containers})
+    except Exception as e:
+        logger.error(f"Error listing containers: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/docker/containers/<container_id>/start', methods=['POST'])
+def start_container(container_id):
+    """Start a Docker container"""
+    try:
+        result = docker_manager.start_container(container_id)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        logger.error(f"Error starting container: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/docker/containers/<container_id>/stop', methods=['POST'])
+def stop_container(container_id):
+    """Stop a Docker container"""
+    try:
+        result = docker_manager.stop_container(container_id)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        logger.error(f"Error stopping container: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/docker/containers/<container_id>/restart', methods=['POST'])
+def restart_container(container_id):
+    """Restart a Docker container"""
+    try:
+        result = docker_manager.restart_container(container_id)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        logger.error(f"Error restarting container: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/docker/containers/<container_id>/logs', methods=['GET'])
+def get_container_logs(container_id):
+    """Get container logs"""
+    try:
+        tail = int(request.args.get('tail', 100))
+        result = docker_manager.get_container_logs(container_id, tail)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        logger.error(f"Error getting container logs: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 

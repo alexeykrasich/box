@@ -53,3 +53,63 @@ object AutomationStatus {
     const val SCHEDULED = "scheduled"
 }
 
+// ============== SCRIPTS MODELS ==============
+
+data class Script(
+    val filename: String,
+    val path: String,
+    val extension: String,
+    val size: Long,
+    val modified: String,
+    @SerializedName("is_running")
+    val isRunning: Boolean
+)
+
+data class ScriptExecution(
+    val id: String,
+    val filename: String,
+    val status: String,
+    @SerializedName("started_at")
+    val startedAt: String?,
+    @SerializedName("finished_at")
+    val finishedAt: String?,
+    val output: String?,
+    val error: String?,
+    @SerializedName("return_code")
+    val returnCode: Int?
+)
+
+// ============== DOCKER MODELS ==============
+
+data class DockerStatus(
+    val available: Boolean,
+    val error: String?
+)
+
+data class DockerContainer(
+    val id: String,
+    val name: String,
+    val image: String,
+    val status: String,
+    val state: String,
+    val ports: String,
+    val created: String,
+    @SerializedName("is_running")
+    val isRunning: Boolean
+)
+
+data class DockerAction(
+    val success: Boolean,
+    @SerializedName("container_id")
+    val containerId: String,
+    val action: String,
+    val message: String
+)
+
+data class ContainerLogs(
+    @SerializedName("container_id")
+    val containerId: String,
+    val logs: String,
+    val success: Boolean
+)
+
