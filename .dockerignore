@@ -1,0 +1,63 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv/
+ENV/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Android (not needed in server image)
+android/
+
+# Tests (not needed in production)
+**/test_*.py
+pytest.ini
+.pytest_cache/
+
+# Local environment
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+logs/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Misc
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+

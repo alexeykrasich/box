@@ -10,6 +10,7 @@ import os
 import sys
 import subprocess
 
+
 def main():
     print("=" * 60)
     print("Automation Control System")
@@ -35,13 +36,29 @@ def main():
         print("Installing dependencies...")
         subprocess.run([sys.executable, "-m", "pip", "install", "-r", "server/requirements.txt"])
 
+    # Check environment
+    api_key_required = os.environ.get('API_KEY_REQUIRED', 'true').lower() == 'true'
+    api_key = os.environ.get('API_KEY')
+
+    print()
+    print("Security Configuration:")
+    print(f"  API Key Required: {api_key_required}")
+    print(f"  API Key Set: {'Yes' if api_key else 'No'}")
+
+    if api_key_required and not api_key:
+        print()
+        print("⚠ WARNING: API_KEY_REQUIRED=true but no API_KEY set!")
+        print("  Set API_KEY environment variable or use API_KEY_REQUIRED=false for dev")
+
     print()
     print("Starting server...")
-    print("Server will be available at: http://0.0.0.0:5000")
+    port = os.environ.get('PORT', '5000')
+    host = os.environ.get('HOST', '0.0.0.0')
+    print(f"Server will be available at: http://{host}:{port}")
     print()
     print("Configure your Android app to connect to:")
-    print("  - Emulator: http://10.0.2.2:5000/")
-    print("  - Real device: http://YOUR_COMPUTER_IP:5000/")
+    print(f"  - Emulator: http://10.0.2.2:{port}/")
+    print(f"  - Real device: http://YOUR_COMPUTER_IP:{port}/")
     print()
     print("Press Ctrl+C to stop the server")
     print("=" * 60)
@@ -50,6 +67,7 @@ def main():
     # Change to server directory and run
     os.chdir('server')
     subprocess.run([sys.executable, "app.py"])
+
 
 if __name__ == "__main__":
     main()

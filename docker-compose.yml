@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  automation-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: automation-control-system:latest
+    container_name: automation-server
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - API_KEY=${API_KEY}
+      - API_KEY_REQUIRED=${API_KEY_REQUIRED:-true}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-60}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - HOST=0.0.0.0
+      - PORT=5000
+      - DEBUG=false
+    volumes:
+      # Mount scripts directory for persistence
+      - ./scripts:/app/scripts
+      # Mount Docker socket for container management (optional, security consideration)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - automation-network
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    # Read-only filesystem except for specific paths
+    read_only: true
+    tmpfs:
+      - /tmp
+
+networks:
+  automation-network:
+    driver: bridge
+
