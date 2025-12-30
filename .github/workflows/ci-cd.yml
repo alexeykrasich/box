@@ -42,7 +42,7 @@ jobs:
           flake8 server/ --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
       - name: Security scan with Bandit
-        run: bandit -r server/ -ll -ii -x server/test_*.py
+        run: bandit -r server/ -ll -ii --exclude server/test_*.py,server/venv,server/__pycache__
 
       - name: Check dependencies for vulnerabilities
         run: safety check -r server/requirements.txt --continue-on-error

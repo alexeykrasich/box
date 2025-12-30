@@ -35,8 +35,8 @@ class Config:
     SSL_KEY = os.environ.get('SSL_KEY')
     HTTPS_ENABLED = bool(SSL_CERT and SSL_KEY)
     
-    # Server
-    HOST = os.environ.get('HOST', '0.0.0.0')
+    # Server - binding to 0.0.0.0 is intentional for Docker containers
+    HOST = os.environ.get('HOST', '0.0.0.0')  # nosec B104 - required for container networking
     PORT = int(os.environ.get('PORT', '5000'))
     DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
     
